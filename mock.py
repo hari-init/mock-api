@@ -2,7 +2,6 @@ from flask import Flask, jsonify
 from datetime import datetime
 import time
 import threading
-import os
 
 app = Flask(__name__)
 
@@ -262,8 +261,7 @@ TEAMS = {
             "division": "None",
             "logo": "https://upload.wikimedia.org/wikipedia/en/7/71/Michigan_Panthers_transparent.png"
         }
-    ]
-}
+    ]}
 
 
 def update_data():
@@ -284,8 +282,5 @@ if __name__ == '__main__':
     update_thread = threading.Thread(target=update_data, daemon=True)
     update_thread.start()
 
-    # Get port from environment or use default
-    port = int(os.environ.get('PORT', 5000))
-
     # Run the app
-    app.run(host='0.0.0.0', port=port, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
