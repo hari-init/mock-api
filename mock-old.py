@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from datetime import datetime
-from apscheduler.schedulers.background import BackgroundScheduler
-import atexit
+import time
+import threading
 
 app = Flask(__name__)
 
@@ -264,30 +264,23 @@ TEAMS = {
     ]}
 
 
-def update_timestamp():
-    """Update the last_updated timestamp"""
-    TEAMS["last_updated"] = datetime.now().isoformat()
-    print(f"Data updated at {TEAMS['last_updated']}")
-
-
-# Initialize scheduler
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=update_timestamp, trigger="interval", seconds=30)
-scheduler.start()
-
-# Shut down the scheduler when exiting the app
-atexit.register(lambda: scheduler.shutdown())
+def update_data():
+    """Update the last_updated timestamp every 30 seconds"""
+    while True:
+        time.sleep(30)
+        TEAMS["last_updated"] = datetime.now().isoformat()
+        print(f"Data updated at {TEAMS['last_updated']}")
 
 
 @app.route('/api/teams', methods=['GET'])
 def get_teams():
-    response = jsonify(TEAMS)
-    # Prevent caching
-    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-    response.headers['Pragma'] = 'no-cache'
-    response.headers['Expires'] = '0'
-    return response
+    return jsonify(TEAMS)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    # Start the update thread
+    update_thread = threading.Thread(target=update_data, daemon=True)
+    update_thread.start()
+
+    # Run the app
+    app.run(host='0.0.0.0', port=5000, debug=True)
